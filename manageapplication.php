@@ -66,7 +66,7 @@ $formsubmitted = optional_param('submitbutton', '', PARAM_TEXT);
 foreach (
     [
         'idptype', 'clientid', 'clientauthmethod', 'clientsecret', 'clientprivatekey', 'clientcert',
-        'clientcertsource', 'clientprivatekeyfile', 'clientcertfile', 'clientcertpassphrase',
+        'clientcertsource', 'clientprivatekeyfile', 'clientcertfile', 'clientcertpassphrase', 'pkcemethod',
         'authendpoint', 'tokenendpoint', 'oidcresource', 'oidcscope', 'secretexpiryrecipients',
         'bindingusernameclaim', 'customclaimname', 'customclaims',
     ] as $field
@@ -105,7 +105,7 @@ if ($form->is_cancelled()) {
     }
 
     // Prepare config settings to save.
-    $configstosave = ['idptype', 'clientid', 'clientauthmethod', 'authendpoint', 'tokenendpoint',
+    $configstosave = ['idptype', 'clientid', 'clientauthmethod', 'pkcemethod', 'authendpoint', 'tokenendpoint',
         'oidcresource', 'oidcscope', 'customclaims'];
 
     // Depending on the value of clientauthmethod, save clientsecret or (clientprivatekey and clientcert).

@@ -37,6 +37,9 @@ class mockhttpclient extends \auth_oidc\httpclient {
     /** @var int The index of the current response. */
     protected $curresponse = 0;
 
+    /** @var array Each request made, as ['url' => string, 'options' => array], for assertions. */
+    public $requests = [];
+
     /**
      * Set a response to return.
      *
@@ -68,6 +71,8 @@ class mockhttpclient extends \auth_oidc\httpclient {
      * @return string The set response.
      */
     protected function request($url, $options = []) {
+        $this->requests[] = ['url' => $url, 'options' => $options];
+
         if (isset($this->mockresponse[$this->curresponse])) {
             $response = $this->mockresponse[$this->curresponse];
             $this->curresponse++;

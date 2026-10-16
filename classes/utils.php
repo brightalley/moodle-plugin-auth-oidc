@@ -410,4 +410,33 @@ class utils {
         require_once($CFG->dirroot . '/auth/oidc/lib.php');
         auth_oidc_initialize_customicon('/' . $filename);
     }
+
+    /**
+     * Generate a PKCE code verifier, as defined in RFC 7636 section 4.1.
+     *
+     * 32 random octets base64url encoded without padding gives 43 characters, the shortest
+     * length the RFC allows (43-128) and the construction it recommends. random_bytes() is
+     * used rather than Moodle's random_string(), which picks from its character pool with a
+     * modulo and is therefore very slightly biased.
+     *
+     * @return string A 43 character code verifier from the RFC's unreserved character set.
+     */
+    public static function generate_code_verifier(): string {
+        return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+    }
+
+    /**
+     * Derive the PKCE code challenge for a code verifier, as defined in RFC 7636 section 4.2.
+     *
+     * @param string $codeverifier The code verifier, from generate_code_verifier().
+     * @param string $method The challenge method, 'S256' or 'plain', as sent to the IdP.
+     * @return string The code challenge to send with the authorization request.
+     */
+    public static function generate_code_challenge(string $codeverifier, string $method): string {
+        if ($method === 'S256') {
+            return rtrim(strtr(base64_encode(hash('sha256', $codeverifier, true)), '+/', '-_'), '=');
+        }
+
+        return $codeverifier;
+    }
 }

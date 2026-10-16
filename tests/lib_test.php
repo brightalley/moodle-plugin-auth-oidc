@@ -72,4 +72,51 @@ final class lib_test extends advanced_testcase {
 
         $this->assertSame($expected, auth_oidc_validate_secret_expiry_recipients($value));
     }
+
+    /**
+     * Data provider for {@see self::test_get_pkce_challenge_method()}.
+     *
+     * @return array
+     */
+    public static function get_pkce_challenge_method_provider(): array {
+        // Data providers run before the test method, so the constants must be loaded here.
+        require_once(__DIR__ . '/../lib.php');
+
+        return [
+            'disabled' => [AUTH_OIDC_PKCE_METHOD_DISABLED, null],
+            's256' => [AUTH_OIDC_PKCE_METHOD_S256, 'S256'],
+            'plain' => [AUTH_OIDC_PKCE_METHOD_PLAIN, 'plain'],
+            'unrecognised value' => [99, null],
+        ];
+    }
+
+    /**
+     * Test mapping the PKCE setting onto the RFC 7636 code_challenge_method value.
+     *
+     * @dataProvider get_pkce_challenge_method_provider
+     * @covers ::auth_oidc_get_pkce_challenge_method
+     * @param int $pkcemethod
+     * @param string|null $expected
+     */
+    public function test_get_pkce_challenge_method(int $pkcemethod, ?string $expected): void {
+        require_once(__DIR__ . '/../lib.php');
+
+        $this->assertSame($expected, auth_oidc_get_pkce_challenge_method($pkcemethod));
+    }
+
+    /**
+     * Test that the PKCE challenge method falls back to reading the plugin setting.
+     *
+     * @covers ::auth_oidc_get_pkce_challenge_method
+     */
+    public function test_get_pkce_challenge_method_reads_config(): void {
+        require_once(__DIR__ . '/../lib.php');
+
+        $this->resetAfterTest(true);
+
+        $this->assertNull(auth_oidc_get_pkce_challenge_method());
+
+        set_config('pkcemethod', AUTH_OIDC_PKCE_METHOD_S256, 'auth_oidc');
+        $this->assertSame('S256', auth_oidc_get_pkce_challenge_method());
+    }
 }

@@ -674,5 +674,20 @@ function xmldb_auth_oidc_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026042000.08, 'auth', 'oidc');
     }
 
+    if ($oldversion < 2026042001.01) {
+        // Define field codeverifier to be added to auth_oidc_state, to hold the PKCE code
+        // verifier between the authorization request and the token request.
+        $table = new xmldb_table('auth_oidc_state');
+        $field = new xmldb_field('codeverifier', XMLDB_TYPE_CHAR, '128', null, null, null, null, 'nonce');
+
+        // Conditionally launch add field codeverifier.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Oidc savepoint reached.
+        upgrade_plugin_savepoint(true, 2026042001.01, 'auth', 'oidc');
+    }
+
     return true;
 }

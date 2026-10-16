@@ -229,6 +229,20 @@ if ($hassiteconfig) {
     $clientcertpassphrasesetting->set_updatedcallback('auth_oidc_validate_auth_settings');
     $applicationsettings->add($clientcertpassphrasesetting);
 
+    // PKCE method.
+    $pkcemethodoptions = [
+        AUTH_OIDC_PKCE_METHOD_DISABLED => get_string('pkce_method_disabled', 'auth_oidc'),
+        AUTH_OIDC_PKCE_METHOD_S256 => get_string('pkce_method_s256', 'auth_oidc'),
+        AUTH_OIDC_PKCE_METHOD_PLAIN => get_string('pkce_method_plain', 'auth_oidc'),
+    ];
+    $applicationsettings->add(new admin_setting_configselect(
+        'auth_oidc/pkcemethod',
+        get_string('pkcemethod', 'auth_oidc'),
+        get_string('pkcemethod_help', 'auth_oidc'),
+        AUTH_OIDC_PKCE_METHOD_DISABLED,
+        $pkcemethodoptions
+    ));
+
     // Endpoints heading.
     $applicationsettings->add(new admin_setting_heading(
         'auth_oidc/application_endpoints_heading',

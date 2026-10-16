@@ -195,6 +195,15 @@ class application extends moodleform {
 
         $mform->addElement('static', 'clientcertpassphrase_help', '', get_string('clientcertpassphrase_help', 'auth_oidc'));
 
+        // PKCE method.
+        $mform->addElement('select', 'pkcemethod', auth_oidc_config_name_in_form('pkcemethod'), [
+            AUTH_OIDC_PKCE_METHOD_DISABLED => get_string('pkce_method_disabled', 'auth_oidc'),
+            AUTH_OIDC_PKCE_METHOD_S256 => get_string('pkce_method_s256', 'auth_oidc'),
+            AUTH_OIDC_PKCE_METHOD_PLAIN => get_string('pkce_method_plain', 'auth_oidc'),
+        ]);
+        $mform->setDefault('pkcemethod', AUTH_OIDC_PKCE_METHOD_DISABLED);
+        $mform->addElement('static', 'pkcemethod_help', '', get_string('pkcemethod_help', 'auth_oidc'));
+
         // Endpoints header.
         $mform->addElement('header', 'endpoints', get_string('settings_section_endpoints', 'auth_oidc'));
         $mform->setExpanded('endpoints');

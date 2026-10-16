@@ -84,6 +84,16 @@ $string['clientauthmethod_help'] = '<ul>
 </ul>';
 $string['auth_method_secret'] = 'Secret';
 $string['auth_method_certificate'] = 'Certificate';
+$string['pkcemethod'] = 'PKCE method';
+$string['pkcemethod_help'] = 'Proof Key for Code Exchange (<a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a>) binds the authorization code to this Moodle site, so an intercepted code cannot be redeemed by anyone else. It is sent in addition to the client authentication method above, not instead of it.
+<ul>
+<li>Set this to match the PKCE configuration of your IdP. If the IdP <b>requires</b> PKCE and this is set to "<b>Disabled</b>", the authorization request will be rejected.</li>
+<li>If the IdP does not support PKCE, leave this "<b>Disabled</b>".</li>
+<li>"<b>S256</b>" is the secure and recommended option. Use "<b>Plain</b>" only for an IdP that cannot do S256.</li>
+</ul>';
+$string['pkce_method_disabled'] = 'Disabled';
+$string['pkce_method_s256'] = 'S256';
+$string['pkce_method_plain'] = 'Plain';
 $string['clientsecret'] = 'Client Secret';
 $string['clientsecret_help'] = 'When using <b>secret</b> authentication method, this is the client secret on the IdP. On some providers, it is also referred to as a key.';
 $string['clientprivatekey'] = 'Client certificate private key';

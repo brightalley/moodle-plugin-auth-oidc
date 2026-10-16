@@ -84,6 +84,25 @@ const AUTH_OIDC_AUTH_CERT_SOURCE_TEXT = 1;
  */
 const AUTH_OIDC_AUTH_CERT_SOURCE_FILE = 2;
 
+// OIDC PKCE (RFC 7636) code challenge method.
+/**
+ * PKCE disabled: no code challenge is sent with the authorization request.
+ */
+const AUTH_OIDC_PKCE_METHOD_DISABLED = 0;
+
+/**
+ * PKCE using the S256 code challenge method, i.e. a SHA-256 hash of the code verifier.
+ */
+const AUTH_OIDC_PKCE_METHOD_S256 = 1;
+
+/**
+ * PKCE using the plain code challenge method, i.e. the code verifier sent as-is.
+ *
+ * Offers no protection against an attacker able to read the authorization request, and is
+ * only here for identity providers that cannot do S256.
+ */
+const AUTH_OIDC_PKCE_METHOD_PLAIN = 2;
+
 /**
  * File extensions accepted for the 'auth_oidc/customicon' upload setting.
  *
@@ -996,6 +1015,30 @@ function auth_oidc_get_client_auth_method_name() {
     }
 
     return $authmethodname;
+}
+
+/**
+ * Return the PKCE code challenge method to send to the IdP for the configured setting.
+ *
+ * Maps the stored AUTH_OIDC_PKCE_METHOD_* value onto the literal 'code_challenge_method'
+ * value defined by RFC 7636, or null when PKCE is disabled.
+ *
+ * @param int|null $pkcemethod An AUTH_OIDC_PKCE_METHOD_* value, or null to read the setting.
+ * @return string|null 'S256', 'plain', or null when PKCE is disabled.
+ */
+function auth_oidc_get_pkce_challenge_method(?int $pkcemethod = null): ?string {
+    if ($pkcemethod === null) {
+        $pkcemethod = (int)get_config('auth_oidc', 'pkcemethod');
+    }
+
+    switch ($pkcemethod) {
+        case AUTH_OIDC_PKCE_METHOD_S256:
+            return 'S256';
+        case AUTH_OIDC_PKCE_METHOD_PLAIN:
+            return 'plain';
+        default:
+            return null;
+    }
 }
 
 /**

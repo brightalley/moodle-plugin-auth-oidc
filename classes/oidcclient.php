@@ -183,15 +183,25 @@ class oidcclient {
 
         $nonce = 'N' . uniqid();
 
+        // PKCE (RFC 7636). The verifier is generated before the state record is created, so it
+        // can be stored alongside the state and recovered for the token request on callback.
+        $pkcechallengemethod = auth_oidc_get_pkce_challenge_method();
+        $codeverifier = ($pkcechallengemethod !== null) ? utils::generate_code_verifier() : null;
+
         $params = [
             'response_type' => 'code',
             'client_id' => $this->clientid,
             'scope' => $this->scope,
             'nonce' => $nonce,
             'response_mode' => 'form_post',
-            'state' => $this->getnewstate($nonce, $stateparams),
+            'state' => $this->getnewstate($nonce, $stateparams, $codeverifier),
             'redirect_uri' => $this->redirecturi,
         ];
+
+        if ($codeverifier !== null) {
+            $params['code_challenge'] = utils::generate_code_challenge($codeverifier, $pkcechallengemethod);
+            $params['code_challenge_method'] = $pkcechallengemethod;
+        }
 
         if (get_config('auth_oidc', 'idptype') != AUTH_OIDC_IDP_TYPE_MICROSOFT_IDENTITY_PLATFORM) {
             $params['resource'] = $this->tokenresource;
@@ -246,14 +256,16 @@ class oidcclient {
      *
      * @param string $nonce The generated nonce value.
      * @param array $stateparams
+     * @param string|null $codeverifier The PKCE code verifier, or null when PKCE is disabled.
      * @return string The new state value.
      */
-    protected function getnewstate($nonce, array $stateparams = []) {
+    protected function getnewstate($nonce, array $stateparams = [], ?string $codeverifier = null) {
         global $DB;
         $staterec = new \stdClass();
         $staterec->sesskey = sesskey();
         $staterec->state = random_string(15);
         $staterec->nonce = $nonce;
+        $staterec->codeverifier = $codeverifier;
         $staterec->timecreated = time();
         $staterec->additionaldata = serialize($stateparams);
         $DB->insert_record('auth_oidc_state', $staterec);
@@ -305,9 +317,10 @@ class oidcclient {
      * Exchange an authorization code for an access token.
      *
      * @param string $code An authorization code.
+     * @param string|null $codeverifier The PKCE code verifier stored with the state, if any.
      * @return array Received parameters.
      */
-    public function tokenrequest($code) {
+    public function tokenrequest($code, ?string $codeverifier = null) {
         if (empty($this->endpoints['token'])) {
             throw new moodle_exception('erroroidcclientnotokenendpoint', 'auth_oidc');
         }
@@ -318,6 +331,10 @@ class oidcclient {
             'code' => $code,
             'redirect_uri' => $this->redirecturi,
         ];
+
+        if (!empty($codeverifier)) {
+            $params['code_verifier'] = $codeverifier;
+        }
 
         switch (get_config('auth_oidc', 'clientauthmethod')) {
             case AUTH_OIDC_AUTH_METHOD_CERTIFICATE:
